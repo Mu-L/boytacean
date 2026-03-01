@@ -2007,15 +2007,15 @@ impl Ppu {
             // this is going to be used for shade index value computation (DMG only)
             let palette_v = self.palettes[palette_index as usize];
 
-            // calculates the offset in the color buffer (raw color information
-            // from 0 to 3) for the sprit that is going to be drawn, this value
-            // is kept as a signed integer to allow proper negative number math
-            let mut color_offset = self.ly as i32 * DISPLAY_WIDTH as i32 + obj.x as i32;
+            // calculates the base offset in the color buffer (raw color
+            // information from 0 to 3) for the sprite that is going to be
+            // drawn, each tile pixel adds to this base to get the final offset
+            let color_base = self.ly as i32 * DISPLAY_WIDTH as i32 + obj.x as i32;
 
-            // calculates the offset in the frame buffer for the sprite
-            // that is going to be drawn, this is going to be the starting
-            // point for the draw operation to be performed
-            let mut frame_offset =
+            // calculates the base offset in the frame buffer for the sprite
+            // that is going to be drawn, each tile pixel adds to this base
+            // (scaled by RGB_SIZE) to get the final frame buffer position
+            let frame_base =
                 (self.ly as i32 * DISPLAY_WIDTH as i32 + obj.x as i32) * RGB_SIZE as i32;
 
             // the relative title offset should range from 0 to 7 in 8x8
@@ -2069,6 +2069,11 @@ impl Ppu {
             let obj_over = always_over || !obj.bg_over;
 
             for tile_x in 0..TILE_WIDTH {
+                // calculates the color buffer offset for the current pixel in iteration,
+                // this is going to be used to update the color buffer and the shade buffer
+                let color_offset = color_base + tile_x as i32;
+                let frame_offset = frame_base + tile_x as i32 * RGB_SIZE as i32;
+
                 let x = obj.x + tile_x as i16;
                 let is_contained = (x >= 0) && (x < DISPLAY_WIDTH as i16);
                 if is_contained {
@@ -2116,14 +2121,6 @@ impl Ppu {
                         self.frame_buffer[frame_offset as usize + 2] = color[2];
                     }
                 }
-
-                // increment the color offset by one as this represents
-                // the advance of one color pixel
-                color_offset += 1;
-
-                // increments the offset of the frame buffer by the
-                // size of an RGB pixel (which is 3 bytes)
-                frame_offset += RGB_SIZE as i32;
             }
 
             // increments the counter so that we're able to keep
