@@ -596,38 +596,30 @@ Drag & drop ROM file: Load new ROM and reset system\n===========================
                         keycode: Some(Keycode::E),
                         keymod,
                         ..
-                    } => {
-                        if !self.fast && (keymod & (Mod::LCTRLMOD | Mod::RCTRLMOD)) != Mod::NOMOD {
-                            self.fast = true;
-                            self.logic_frequency *= 8;
-                        }
+                    } if !self.fast && (keymod & (Mod::LCTRLMOD | Mod::RCTRLMOD)) != Mod::NOMOD => {
+                        self.fast = true;
+                        self.logic_frequency *= 8;
                     }
                     Event::KeyUp {
                         keycode: Some(Keycode::E),
                         ..
-                    } => {
-                        if self.fast {
-                            self.fast = false;
-                            self.logic_frequency /= 8;
-                        }
+                    } if self.fast => {
+                        self.fast = false;
+                        self.logic_frequency /= 8;
                     }
                     Event::KeyUp {
                         keycode: Some(Keycode::LCtrl) | Some(Keycode::RCtrl),
                         ..
-                    } => {
-                        if self.fast {
-                            self.fast = false;
-                            self.logic_frequency /= 8;
-                        }
+                    } if self.fast => {
+                        self.fast = false;
+                        self.logic_frequency /= 8;
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::F),
                         keymod,
                         ..
-                    } => {
-                        if (keymod & (Mod::LCTRLMOD | Mod::RCTRLMOD)) != Mod::NOMOD {
-                            self.toggle_fullscreen()
-                        }
+                    } if (keymod & (Mod::LCTRLMOD | Mod::RCTRLMOD)) != Mod::NOMOD => {
+                        self.toggle_fullscreen()
                     }
                     Event::KeyDown {
                         keycode: Some(Keycode::Plus),
